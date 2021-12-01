@@ -4,7 +4,7 @@ const discord = require('discord.js');
 const client = new discord.Client({intents: [discord.Intents.FLAGS.GUILDS, discord.Intents.FLAGS.GUILD_MESSAGES, discord.Intents.FLAGS.GUILD_VOICE_STATES]});
 
 const config = {
-    token: 'NjY5MjcyMDUzNjQ3NDA5MTg0.XidaLA.vg3r-BD6wRPZkfRQcVGbJQTMP8w',
+    token: '',
     prefix: 'jp.'
 };
 
@@ -18,13 +18,13 @@ client.once('ready', () => console.log(`${client.user.username} is online!`));
 
 client.on('messageCreate', message => {
     if(message.author.bot || message.channel.type === `DM`) return;
-    
+
     if(!message.content.startsWith(config.prefix)) return;
-    
+
     let args = message.content.substring(config.prefix.length).split(" ");
-    
+
     const vc = connections.get(message.guild.me.voice.channel?.id);
-    
+
     switch(args[0].toLowerCase()){
         case 'play':
             if(!message.member.voice.channel && !message.guild.me.voice.channel) return message.channel.send({content: `Please join a voice channel in order to play a song!`});
@@ -53,7 +53,7 @@ client.on('messageCreate', message => {
         case 'stop':
             if(!vc) return message.channel.send({content: `There is currently nothing playing!`});
             audioManager.stop(vc);
-            message.channel.send({content: `Player successfully stopped!`});            
+            message.channel.send({content: `Player successfully stopped!`});
             break;
         case 'queue':
             if(!vc) return message.channel.send({content: `There is currently nothing playing!`});
