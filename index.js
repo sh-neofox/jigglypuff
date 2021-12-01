@@ -15,6 +15,8 @@ const client = new discord.Client({intents: [discord.Intents.FLAGS.GUILDS, disco
 const connections = new Map();
 const audioManager = new AudioManager();
 
+
+
 client.once('ready', () => console.log(`${client.user.username} is online!`));
 client.on('messageCreate', message => {
   // Ignore commands on Direct Messages
@@ -23,19 +25,31 @@ client.on('messageCreate', message => {
   if(!message.content.startsWith(process.env.DISCORD_PREFIX)) return;
   // Get bot command
   let args = message.content.substring(process.env.DISCORD_PREFIX.length).split(" ");
-  // Get voiceChannel from the message, channel can be undefined
-  const voiceChannel = connections.get(message.guild.me.voice.channel?.id);
+  // Get voiceChannel from the message
+  const userVoiceChannel = message.member.voice.channel
+  // Message Sent -> GuildMember -> VoiceState -> channel
+  console.log('Jigglypuff risulta collegato nel canale ' + message.member.voice.channel.name + ', con ID ' + message.member.voice.channel.id)
 
   switch(args[0].toLowerCase()){
       case 'play':
-          console.log('Play action received.');
-          url = args[1]
-          console.log('URL received: ' + url);
-          const userVoiceChannel = message.guild.me.voice.channel || message.member.voice.channel
-          audioManager.play(userVoiceChannel, url, {
-            volume: 2,
-            quality: 'high',
-            audiotype: 'arbitrary'
+          const defaultVolume = 2;
+          const defaultQuality = 'high';
+          const defaultAudioType = 'arbitrary';
+          const logPlayCommand = new discord.MessageEmbed()
+            .setColor('GOLD')
+            .setTitle('__Play Command Debug__')
+            .setDescription('*URL*: ' + args[1]
+            + '\n' + '*Volume* : ' + defaultVolume
+            + '\n' + '*Quality* : ' + defaultQuality
+            + '\n' + '*AudioType* : ' + defaultAudioType
+            + '\n' + '*Channel* : ' + message.member.voice.channel.name
+            + '\n' + '*Channel ID* : ' + message.member.voice.channel.id
+          );
+          message.channel.send({embeds: [logPlayCommand]});
+          audioManager.play(userVoiceChannel, args[1], {
+            volume: defaultVolume,
+            quality: defaultQuality,
+            audiotype: defaultAudioType
           }).then(queue => {
             if(queue === false) message.channel.send('Playing the song immediatly.');
             else message.channel.send('The song has been added to the queue.');
@@ -45,39 +59,40 @@ client.on('messageCreate', message => {
           });
           // Set up the loop
           audioManager.loop(userVoiceChannel, audioManager.looptypes.queueloop);
+          console.log(client.voiceClient);
           break;
       case 'stop':
           console.log('Stop action received.');
-          audioManager.stop(voiceChannel);
+          audioManager.stop(userVoiceChannel);
           break;
       case 'skip':
           console.log('Skip action received.');
-          audioManager.skip(voiceChannel).then(() => console.log(`Skipped song!`)).catch(console.log);
+          audioManager.skip(userVoiceChannel).then(() => console.log(`Skipped song!`)).catch(console.log);
           break;
       case 'queue':
           console.log('Queue action received.');
-          const queue = audioManager.queue(voiceChannel).reduce((text, song, index) => {
-                if(song.title) text += `**[${index + 1}]** ${song.title}`;
-                else text += `**[${index + 1}]** ${song.url}`;
+          const queue = audioManager.queue(userVoiceChannel).reduce((text, song, index) => {
+                if(song.title) text +="\n" + `**[${index + 1}]** ${song.title}`;
+                else text += "\n" + `**[${index + 1}]** ${song.url}`;
                 return text;
-            }, `__**QUEUE**__`);
+            }, `__**LIST**__`);
             const queueEmbed = new discord.MessageEmbed()
-            .setColor(`BLURPLE`)
+            .setColor(`LUMINOUS_VIVID_PINK`)
             .setTitle(`Queue`)
             .setDescription(queue);
             message.channel.send({embeds: [queueEmbed]});
           break;
       case 'clear':
           console.log('Clear action received.');
-          audioManager.clearqueue(voiceChannel);
+          audioManager.clearqueue(userVoiceChannel);
           break;
       case 'pause':
           console.log('Mute action received.');
-          audioManager.pause(voiceChannel);
+          audioManager.pause(userVoiceChannel);
           break;
       case 'resume':
           console.log('Unmute action received.');
-          audioManager.resume(voiceChannel);
+          audioManager.resume(userVoiceChannel);
           break;
       case 'volume':
           console.log('Volume action received.');
