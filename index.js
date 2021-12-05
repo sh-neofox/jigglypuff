@@ -32,7 +32,8 @@ client.on('messageCreate', message => {
 
   switch(args[0].toLowerCase()){
       case 'play':
-          const defaultVolume = 2;
+          if(!userVoiceChannel) console.log('You must be in a voice channel.');
+          const defaultVolume = 3;
           const defaultQuality = 'high';
           const defaultAudioType = 'arbitrary';
           const logPlayCommand = new discord.MessageEmbed()
@@ -62,14 +63,17 @@ client.on('messageCreate', message => {
           console.log(client.voiceClient);
           break;
       case 'stop':
+          if(!userVoiceChannel) console.log('You must be in a voice channel.');
           console.log('Stop action received.');
           audioManager.stop(userVoiceChannel);
           break;
       case 'skip':
+          if(!userVoiceChannel) console.log('You must be in a voice channel.');
           console.log('Skip action received.');
           audioManager.skip(userVoiceChannel).then(() => console.log(`Skipped song!`)).catch(console.log);
           break;
       case 'queue':
+          if(!userVoiceChannel) console.log('You must be in a voice channel.');
           console.log('Queue action received.');
           const queue = audioManager.queue(userVoiceChannel).reduce((text, song, index) => {
                 if(song.title) text +="\n" + `**[${index + 1}]** ${song.title}`;
@@ -83,18 +87,22 @@ client.on('messageCreate', message => {
             message.channel.send({embeds: [queueEmbed]});
           break;
       case 'clear':
+          if(!userVoiceChannel) console.log('You must be in a voice channel.');
           console.log('Clear action received.');
           audioManager.clearqueue(userVoiceChannel);
           break;
       case 'pause':
+          if(!userVoiceChannel) console.log('You must be in a voice channel.');
           console.log('Mute action received.');
           audioManager.pause(userVoiceChannel);
           break;
       case 'resume':
+          if(!userVoiceChannel) console.log('You must be in a voice channel.');
           console.log('Unmute action received.');
           audioManager.resume(userVoiceChannel);
           break;
       case 'volume':
+          if(!userVoiceChannel) console.log('You must be in a voice channel.');
           console.log('Volume action received.');
           break;
     };
